@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Interactive map of Arkansas public school letter grades for the 2025-26 school year.">
+    <title>2025-26 Arkansas School Letter Grades</title>
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#map">Skip to the map</a>
+
+    <header class="site-header">
+      <div>
+        <h1>2025-26 Arkansas School Letter Grades</h1>
+      </div>
+      <img class="oep-logo" src="assets/oep-logo.png" alt="Office for Education Policy">
+    </header>
+
+    <main class="app-shell">
+      <aside class="filter-panel" aria-label="Map filters">
+        <div id="load-error" class="error-message" role="alert" hidden></div>
+
+        <div class="filter-group search-filter">
+          <label for="school-search">School or district</label>
+          <input id="school-search" type="search" placeholder="Search by name" autocomplete="off">
+        </div>
+
+        <fieldset class="filter-group grade-filter">
+          <legend class="visually-hidden">Letter grade filters</legend>
+          <div id="grade-options" class="grade-options"></div>
+        </fieldset>
+
+        <div class="filter-group">
+          <label for="grade-span">Grade span</label>
+          <select id="grade-span">
+            <option value="All">All grade spans</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="cooperative">Education service cooperative</label>
+          <select id="cooperative">
+            <option value="All">All cooperatives</option>
+          </select>
+        </div>
+
+        <fieldset class="filter-group poverty-filter">
+          <legend class="legend-with-help">
+            <span>Students from low-income households (FRL %)</span>
+            <span class="tooltip-wrap">
+              <button class="tooltip-trigger" type="button" aria-label="About FRL" aria-describedby="frl-definition">i</button>
+              <span id="frl-definition" class="tooltip-bubble" role="tooltip">FRL is the percentage of students eligible for free or reduced-price lunch.</span>
+            </span>
+          </legend>
+          <div class="range-readout" aria-live="polite">
+            <span id="poverty-min-value">0%</span>
+            <span aria-hidden="true">to</span>
+            <span id="poverty-max-value">100%</span>
+          </div>
+          <div id="poverty-range" class="dual-range">
+            <label class="visually-hidden" for="poverty-min">Minimum poverty rate</label>
+            <input id="poverty-min" type="range" min="0" max="100" value="0" step="1">
+            <label class="visually-hidden" for="poverty-max">Maximum poverty rate</label>
+            <input id="poverty-max" type="range" min="0" max="100" value="100" step="1">
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-group layer-filter">
+          <legend class="visually-hidden">Optional map overlays</legend>
+          <label class="layer-toggle" for="district-boundaries">
+            <input id="district-boundaries" type="checkbox">
+            <span>School district boundaries</span>
+          </label>
+        </fieldset>
+
+        <div class="filter-actions">
+          <button id="reset-filters" class="reset-button" type="button">Reset</button>
+        </div>
+
+      </aside>
+
+      <section class="map-panel" aria-label="Interactive school map">
+        <div id="map" role="region" aria-label="Map of Arkansas public schools"></div>
+      </section>
+    </main>
+
+    <script src="vendor/leaflet/leaflet.js"></script>
+    <script src="data/arkansas.js"></script>
+    <script src="data/districts.js"></script>
+    <script src="data/schools.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
