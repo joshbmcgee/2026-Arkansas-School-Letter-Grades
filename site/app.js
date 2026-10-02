@@ -10,6 +10,11 @@
     F: "#c92228"
   };
   const ALL = "All";
+  const SHARED_LOCATION_OFFSET_PX = {
+    2: 7,
+    3: 8,
+    4: 9
+  };
 
   const controls = {
     search: document.getElementById("school-search"),
@@ -302,58 +307,50 @@
       </article>`;
   }
 
-  function popupForGroup(group) {
-    const sorted = [...group].sort((a, b) => a.school_name.localeCompare(b.school_name));
-    const heading = group.length > 1
-      ? `<h2 class="shared-popup-heading">${group.length} schools share this mapped location</h2>`
-      : "";
-    return `${heading}${sorted.map(schoolPopup).join("")}`;
+  function markerLatLng(school, index, groupSize) {
+    const originalLatLng = [school.latitude, school.longitude];
+    if (groupSize === 1) {
+      return originalLatLng;
+    }
+
+    const radius = SHARED_LOCATION_OFFSET_PX[groupSize] || 10;
+    const angle = -Math.PI / 2 + (2 * Math.PI * index) / groupSize;
+    const point = map.latLngToLayerPoint(originalLatLng);
+
+    return map.layerPointToLatLng({
+      x: point.x + Math.cos(angle) * radius,
+      y: point.y + Math.sin(angle) * radius
+    });
   }
 
   function addMarkers(groups) {
     markerLayer.clearLayers();
 
     groups.forEach((group) => {
-      const first = group[0];
-      const latLng = [first.latitude, first.longitude];
-      let marker;
+      const sortedGroup = [...group].sort((a, b) =>
+        a.school_name.localeCompare(b.school_name) || a.school_lea.localeCompare(b.school_lea)
+      );
 
-      if (group.length === 1) {
-        marker = L.circleMarker(latLng, {
+      sortedGroup.forEach((school, index) => {
+        const marker = L.circleMarker(markerLatLng(school, index, sortedGroup.length), {
           radius: 6,
           color: "#3f4b46",
           weight: 1,
           opacity: 1,
-          fillColor: GRADE_COLORS[first.grade_2026],
+          fillColor: GRADE_COLORS[school.grade_2026],
           fillOpacity: 0.9
         });
         marker.bindTooltip(
-          `${escapeHtml(first.school_name)}<br>2026 grade: ${escapeHtml(first.grade_2026)}`,
+          `${escapeHtml(school.school_name)}<br>2026 grade: ${escapeHtml(school.grade_2026)}`,
           { direction: "auto", opacity: 0.96 }
         );
-      } else {
-        marker = L.marker(latLng, {
-          keyboard: true,
-          title: `${group.length} schools share this mapped location`,
-          icon: L.divIcon({
-            className: "",
-            html: `<span class="shared-location-marker">${group.length}</span>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-          })
+        marker.bindPopup(schoolPopup(school), {
+          maxWidth: 380,
+          maxHeight: 470,
+          autoPanPadding: [30, 30]
         });
-        marker.bindTooltip(`${group.length} schools share this mapped location`, {
-          direction: "auto",
-          opacity: 0.96
-        });
-      }
-
-      marker.bindPopup(popupForGroup(group), {
-        maxWidth: 380,
-        maxHeight: 470,
-        autoPanPadding: [30, 30]
+        marker.addTo(markerLayer);
       });
-      marker.addTo(markerLayer);
     });
   }
 
@@ -403,6 +400,7 @@
       schools = window.SCHOOL_DATA.features.map(normalizeFeature);
       initializeMap();
       initializeControls();
+      map.on("zoomend", applyFilters);
       applyFilters();
     } catch (error) {
       console.error(error);
